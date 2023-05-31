@@ -1,7 +1,6 @@
 ﻿using PokerMath;
 using System.Diagnostics;
 using static PokerMath.Constants;
-using static PokerMath.Utils;
 
 const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 
@@ -11,8 +10,8 @@ const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 //    var player = new List<Card> { deck.Pop(), deck.Pop() };
 //    var casino = new List<Card> { deck.Pop(), deck.Pop() };
 //    var board = new List<Card> { deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop() };
-//    var winner = GetWinner(player, casino, board);
-//    var winner2 = GetWinner2(player, casino, board);
+//    var winner = Utils.GetWinner(player, casino, board);
+//    var winner2 = UtilsOld.GetWinner(player, casino, board);
 //    Debug.Assert(winner == winner2);
 
 //    if (i % 100000 == 0)
@@ -25,7 +24,7 @@ foreach (var player in AllHands)
     var usageMap = allCards.ToDictionary(x => x, x => false);
 
     foreach (var card in player)
-        usageMap[allCards.Single(x => x.Value == card.Value && x.Suit == card.Suit)] = true;
+        usageMap[allCards.Single(x => x.Mask == card.Mask)] = true;
 
     var board = new Card[5];
     var casino = new Card[2];
@@ -89,9 +88,7 @@ foreach (var player in AllHands)
                                 casino[1] = card6;
 
                                 // Игра
-                                var winner = GetWinner2(player, casino, board);
-                                //var winner2 = GetWinner2(player, casino, board);
-                                //Debug.Assert(winner == winner2);
+                                var winner = Utils.GetWinner(player, casino, board);
                                 if (winner == Winner.Player) winCount++;
                                 else if (winner == Winner.Casino) loseCount++;
                                 else splitCount++;

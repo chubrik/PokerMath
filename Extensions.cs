@@ -1,8 +1,8 @@
-﻿using System.Collections;
+﻿namespace PokerMath;
 
-namespace PokerMath;
+using System.Collections;
 
-public static class ListExtensions
+public static class Extensions
 {
     private static readonly Random _random = new();
 

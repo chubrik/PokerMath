@@ -1,17 +1,17 @@
-﻿using System.Diagnostics;
+﻿namespace PokerMath;
 
-namespace PokerMath;
+using System.Diagnostics;
 
 internal static class Utils
 {
-    public static Winner GetWinner2(IReadOnlyList<Card> player, IReadOnlyList<Card> casino, IReadOnlyList<Card> board)
+    public static Winner GetWinner(IReadOnlyList<Card> player, IReadOnlyList<Card> casino, IReadOnlyList<Card> board)
     {
         Debug.Assert(player.Count == 2);
         Debug.Assert(casino.Count == 2);
         Debug.Assert(board.Count == 5);
 
-        var playerCtx = GetCtx2(playerOrCasino: player, board: board);
-        var casinoCtx = GetCtx2(playerOrCasino: casino, board: board);
+        var playerCtx = GetCtx(playerOrCasino: player, board: board);
+        var casinoCtx = GetCtx(playerOrCasino: casino, board: board);
 
         if (playerCtx.Kind > casinoCtx.Kind)
             return Winner.Player;
@@ -19,7 +19,7 @@ internal static class Utils
         if (playerCtx.Kind < casinoCtx.Kind)
             return Winner.Casino;
 
-        if (playerCtx.Kind == WinKind.Single)
+        if (playerCtx.ValueCount == 5)
         {
             if (playerCtx.Value0 != casinoCtx.Value0)
                 return playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
@@ -37,7 +37,7 @@ internal static class Utils
                  : playerCtx.Value4 > casinoCtx.Value4 ? Winner.Player : Winner.Casino;
         }
 
-        if (playerCtx.Kind == WinKind.Pair)
+        if (playerCtx.ValueCount == 4)
         {
             if (playerCtx.Value0 != casinoCtx.Value0)
                 return playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
@@ -52,8 +52,7 @@ internal static class Utils
                  : playerCtx.Value3 > casinoCtx.Value3 ? Winner.Player : Winner.Casino;
         }
 
-        if (playerCtx.Kind == WinKind.TwoPairs ||
-            playerCtx.Kind == WinKind.Three)
+        if (playerCtx.ValueCount == 3)
         {
             if (playerCtx.Value0 != casinoCtx.Value0)
                 return playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
@@ -65,30 +64,11 @@ internal static class Utils
                  : playerCtx.Value2 > casinoCtx.Value2 ? Winner.Player : Winner.Casino;
         }
 
-        if (playerCtx.Kind == WinKind.Straight)
+        if (playerCtx.ValueCount == 1)
             return playerCtx.Value0 == casinoCtx.Value0 ? Winner.Split
                 : playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
 
-        if (playerCtx.Kind == WinKind.Flush)
-        {
-            if (playerCtx.Value0 != casinoCtx.Value0)
-                return playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
-
-            if (playerCtx.Value1 != casinoCtx.Value1)
-                return playerCtx.Value1 > casinoCtx.Value1 ? Winner.Player : Winner.Casino;
-
-            if (playerCtx.Value2 != casinoCtx.Value2)
-                return playerCtx.Value2 > casinoCtx.Value2 ? Winner.Player : Winner.Casino;
-
-            if (playerCtx.Value3 != casinoCtx.Value3)
-                return playerCtx.Value3 > casinoCtx.Value3 ? Winner.Player : Winner.Casino;
-
-            return playerCtx.Value4 == casinoCtx.Value4 ? Winner.Split
-                 : playerCtx.Value4 > casinoCtx.Value4 ? Winner.Player : Winner.Casino;
-        }
-
-        if (playerCtx.Kind == WinKind.FullHouse ||
-            playerCtx.Kind == WinKind.Four)
+        if (playerCtx.ValueCount == 2)
         {
             if (playerCtx.Value0 != casinoCtx.Value0)
                 return playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
@@ -97,14 +77,10 @@ internal static class Utils
                  : playerCtx.Value1 > casinoCtx.Value1 ? Winner.Player : Winner.Casino;
         }
 
-        if (playerCtx.Kind == WinKind.StraightFlush)
-            return playerCtx.Value0 == casinoCtx.Value0 ? Winner.Split
-                : playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino;
-
         throw new InvalidOperationException();
     }
 
-    private static WinCtx2 GetCtx2(IReadOnlyList<Card> playerOrCasino, IReadOnlyList<Card> board)
+    private static WinCtx GetCtx(IReadOnlyList<Card> playerOrCasino, IReadOnlyList<Card> board)
     {
         //                                           Spad Hear Diam Club  A   K   Q   J   T   9   8   7   6   5   4   3   2
         const ulong CounterStart /* */ = 0b_00000000_0011_0011_0011_0011_000_000_000_000_000_000_000_000_000_000_000_000_000;
@@ -157,16 +133,16 @@ internal static class Utils
             if ((board[4].Mask & flushSuitMask) != 0) flush |= board[4].Mask;
 
             // Стрит-флеш
-            if ((flush & StraightAMas2) == StraightAMas2) return WinCtx2.StraightFlush(Value._A);
-            if ((flush & StraightKMas2) == StraightKMas2) return WinCtx2.StraightFlush(Value._K);
-            if ((flush & StraightQMas2) == StraightQMas2) return WinCtx2.StraightFlush(Value._Q);
-            if ((flush & StraightJMas2) == StraightJMas2) return WinCtx2.StraightFlush(Value._J);
-            if ((flush & StraightTMas2) == StraightTMas2) return WinCtx2.StraightFlush(Value._T);
-            if ((flush & Straight9Mas2) == Straight9Mas2) return WinCtx2.StraightFlush(Value._9);
-            if ((flush & Straight8Mas2) == Straight8Mas2) return WinCtx2.StraightFlush(Value._8);
-            if ((flush & Straight7Mas2) == Straight7Mas2) return WinCtx2.StraightFlush(Value._7);
-            if ((flush & Straight6Mas2) == Straight6Mas2) return WinCtx2.StraightFlush(Value._6);
-            if ((flush & Straight5Mas2) == Straight5Mas2) return WinCtx2.StraightFlush(Value._5);
+            if ((flush & StraightAMas2) == StraightAMas2) return WinCtx.StraightFlush(Value._A);
+            if ((flush & StraightKMas2) == StraightKMas2) return WinCtx.StraightFlush(Value._K);
+            if ((flush & StraightQMas2) == StraightQMas2) return WinCtx.StraightFlush(Value._Q);
+            if ((flush & StraightJMas2) == StraightJMas2) return WinCtx.StraightFlush(Value._J);
+            if ((flush & StraightTMas2) == StraightTMas2) return WinCtx.StraightFlush(Value._T);
+            if ((flush & Straight9Mas2) == Straight9Mas2) return WinCtx.StraightFlush(Value._9);
+            if ((flush & Straight8Mas2) == Straight8Mas2) return WinCtx.StraightFlush(Value._8);
+            if ((flush & Straight7Mas2) == Straight7Mas2) return WinCtx.StraightFlush(Value._7);
+            if ((flush & Straight6Mas2) == Straight6Mas2) return WinCtx.StraightFlush(Value._6);
+            if ((flush & Straight5Mas2) == Straight5Mas2) return WinCtx.StraightFlush(Value._5);
 
             // Флеш
             var flushValues = new Value[7];
@@ -185,7 +161,7 @@ internal static class Utils
             if ((flush & Card.Mask3) != 0) flushValues[flushValuesIndex++] = Value._3;
             if ((flush & Card.Mask2) != 0) flushValues[flushValuesIndex++] = Value._2;
 
-            return WinCtx2.Flush(flushValues);
+            return WinCtx.Flush(flushValues);
         }
 
         var shiftCounter = counter;
@@ -200,6 +176,7 @@ internal static class Utils
         groups3 >>= 2;
         groups2 >>= 2;
         groups1 >>= 2;
+        var groups321 = groups3 | groups2 | groups1;
 
         // Каре
         if (groups4 != 0)
@@ -219,73 +196,34 @@ internal static class Utils
                      : (groups4 & Card.Mask2) != 0 ? Value._2
                      : throw new InvalidOperationException();
 
-            if (groups3 != 0)
-            {
-                if ((groups3 & Card.MaskA) != 0) return WinCtx2.Four(four, Value._A);
-                if ((groups3 & Card.MaskK) != 0) return WinCtx2.Four(four, Value._K);
-                if ((groups3 & Card.MaskQ) != 0) return WinCtx2.Four(four, Value._Q);
-                if ((groups3 & Card.MaskJ) != 0) return WinCtx2.Four(four, Value._J);
-                if ((groups3 & Card.MaskT) != 0) return WinCtx2.Four(four, Value._T);
-                if ((groups3 & Card.Mask9) != 0) return WinCtx2.Four(four, Value._9);
-                if ((groups3 & Card.Mask8) != 0) return WinCtx2.Four(four, Value._8);
-                if ((groups3 & Card.Mask7) != 0) return WinCtx2.Four(four, Value._7);
-                if ((groups3 & Card.Mask6) != 0) return WinCtx2.Four(four, Value._6);
-                if ((groups3 & Card.Mask5) != 0) return WinCtx2.Four(four, Value._5);
-                if ((groups3 & Card.Mask4) != 0) return WinCtx2.Four(four, Value._4);
-                if ((groups3 & Card.Mask3) != 0) return WinCtx2.Four(four, Value._3);
-                if ((groups3 & Card.Mask2) != 0) return WinCtx2.Four(four, Value._2);
-                throw new InvalidOperationException();
-            }
-
-            var rest = Value._2;
-
-            if (groups2 != 0)
-            {
-                if ((groups2 & Card.MaskA) != 0) { rest = Value._A; goto Four; };
-                if ((groups2 & Card.MaskK) != 0) { rest = Value._K; goto Four; };
-                if ((groups2 & Card.MaskQ) != 0) { rest = Value._Q; goto Four; };
-                if ((groups2 & Card.MaskJ) != 0) { rest = Value._J; goto Four; };
-                if ((groups2 & Card.MaskT) != 0) { rest = Value._T; goto Four; };
-                if ((groups2 & Card.Mask9) != 0) { rest = Value._9; goto Four; };
-                if ((groups2 & Card.Mask8) != 0) { rest = Value._8; goto Four; };
-                if ((groups2 & Card.Mask7) != 0) { rest = Value._7; goto Four; };
-                if ((groups2 & Card.Mask6) != 0) { rest = Value._6; goto Four; };
-                if ((groups2 & Card.Mask5) != 0) { rest = Value._5; goto Four; };
-                if ((groups2 & Card.Mask4) != 0) { rest = Value._4; goto Four; };
-                if ((groups2 & Card.Mask3) != 0) { rest = Value._3; goto Four; };
-                if ((groups2 & Card.Mask2) != 0) { goto Four; };
-                throw new InvalidOperationException();
-            }
-
-            Four:
-            if ((groups1 & Card.MaskA) != 0) return WinCtx2.Four(four, rest > Value._A ? rest : Value._A);
-            if ((groups1 & Card.MaskK) != 0) return WinCtx2.Four(four, rest > Value._K ? rest : Value._K);
-            if ((groups1 & Card.MaskQ) != 0) return WinCtx2.Four(four, rest > Value._Q ? rest : Value._Q);
-            if ((groups1 & Card.MaskJ) != 0) return WinCtx2.Four(four, rest > Value._J ? rest : Value._J);
-            if ((groups1 & Card.MaskT) != 0) return WinCtx2.Four(four, rest > Value._T ? rest : Value._T);
-            if ((groups1 & Card.Mask9) != 0) return WinCtx2.Four(four, rest > Value._9 ? rest : Value._9);
-            if ((groups1 & Card.Mask8) != 0) return WinCtx2.Four(four, rest > Value._8 ? rest : Value._8);
-            if ((groups1 & Card.Mask7) != 0) return WinCtx2.Four(four, rest > Value._7 ? rest : Value._7);
-            if ((groups1 & Card.Mask6) != 0) return WinCtx2.Four(four, rest > Value._6 ? rest : Value._6);
-            if ((groups1 & Card.Mask5) != 0) return WinCtx2.Four(four, rest > Value._5 ? rest : Value._5);
-            if ((groups1 & Card.Mask4) != 0) return WinCtx2.Four(four, rest > Value._4 ? rest : Value._4);
-            if ((groups1 & Card.Mask3) != 0) return WinCtx2.Four(four, rest > Value._3 ? rest : Value._3);
-            if ((groups1 & Card.Mask2) != 0) return WinCtx2.Four(four, rest > Value._2 ? rest : Value._2);
+            if ((groups321 & Card.MaskA) != 0) return WinCtx.Four(four, Value._A);
+            if ((groups321 & Card.MaskK) != 0) return WinCtx.Four(four, Value._K);
+            if ((groups321 & Card.MaskQ) != 0) return WinCtx.Four(four, Value._Q);
+            if ((groups321 & Card.MaskJ) != 0) return WinCtx.Four(four, Value._J);
+            if ((groups321 & Card.MaskT) != 0) return WinCtx.Four(four, Value._T);
+            if ((groups321 & Card.Mask9) != 0) return WinCtx.Four(four, Value._9);
+            if ((groups321 & Card.Mask8) != 0) return WinCtx.Four(four, Value._8);
+            if ((groups321 & Card.Mask7) != 0) return WinCtx.Four(four, Value._7);
+            if ((groups321 & Card.Mask6) != 0) return WinCtx.Four(four, Value._6);
+            if ((groups321 & Card.Mask5) != 0) return WinCtx.Four(four, Value._5);
+            if ((groups321 & Card.Mask4) != 0) return WinCtx.Four(four, Value._4);
+            if ((groups321 & Card.Mask3) != 0) return WinCtx.Four(four, Value._3);
+            if ((groups321 & Card.Mask2) != 0) return WinCtx.Four(four, Value._2);
             throw new InvalidOperationException();
         }
 
         // Стрит
         var values = counter + GroupAntiMask;
-        if ((values & StraightAMask) == StraightAMask) return WinCtx2.Straight(Value._A);
-        if ((values & StraightKMask) == StraightKMask) return WinCtx2.Straight(Value._K);
-        if ((values & StraightQMask) == StraightQMask) return WinCtx2.Straight(Value._Q);
-        if ((values & StraightJMask) == StraightJMask) return WinCtx2.Straight(Value._J);
-        if ((values & StraightTMask) == StraightTMask) return WinCtx2.Straight(Value._T);
-        if ((values & Straight9Mask) == Straight9Mask) return WinCtx2.Straight(Value._9);
-        if ((values & Straight8Mask) == Straight8Mask) return WinCtx2.Straight(Value._8);
-        if ((values & Straight7Mask) == Straight7Mask) return WinCtx2.Straight(Value._7);
-        if ((values & Straight6Mask) == Straight6Mask) return WinCtx2.Straight(Value._6);
-        if ((values & Straight5Mask) == Straight5Mask) return WinCtx2.Straight(Value._5);
+        if ((values & StraightAMask) == StraightAMask) return WinCtx.Straight(Value._A);
+        if ((values & StraightKMask) == StraightKMask) return WinCtx.Straight(Value._K);
+        if ((values & StraightQMask) == StraightQMask) return WinCtx.Straight(Value._Q);
+        if ((values & StraightJMask) == StraightJMask) return WinCtx.Straight(Value._J);
+        if ((values & StraightTMask) == StraightTMask) return WinCtx.Straight(Value._T);
+        if ((values & Straight9Mask) == Straight9Mask) return WinCtx.Straight(Value._9);
+        if ((values & Straight8Mask) == Straight8Mask) return WinCtx.Straight(Value._8);
+        if ((values & Straight7Mask) == Straight7Mask) return WinCtx.Straight(Value._7);
+        if ((values & Straight6Mask) == Straight6Mask) return WinCtx.Straight(Value._6);
+        if ((values & Straight5Mask) == Straight5Mask) return WinCtx.Straight(Value._5);
 
         // Сет / Фулл-хаус
         if (groups3 != 0)
@@ -307,33 +245,33 @@ internal static class Utils
             throw new InvalidOperationException();
 
             // Фулл-хаус
-            FullHouse_K: if ((groups3 & Card.MaskK) != 0) return WinCtx2.FullHouse(three, Value._K);
-            FullHouse_Q: if ((groups3 & Card.MaskQ) != 0) return WinCtx2.FullHouse(three, Value._Q);
-            FullHouse_J: if ((groups3 & Card.MaskJ) != 0) return WinCtx2.FullHouse(three, Value._J);
-            FullHouse_T: if ((groups3 & Card.MaskT) != 0) return WinCtx2.FullHouse(three, Value._T);
-            FullHouse_9: if ((groups3 & Card.Mask9) != 0) return WinCtx2.FullHouse(three, Value._9);
-            FullHouse_8: if ((groups3 & Card.Mask8) != 0) return WinCtx2.FullHouse(three, Value._8);
-            FullHouse_7: if ((groups3 & Card.Mask7) != 0) return WinCtx2.FullHouse(three, Value._7);
-            FullHouse_6: if ((groups3 & Card.Mask6) != 0) return WinCtx2.FullHouse(three, Value._6);
-            FullHouse_5: if ((groups3 & Card.Mask5) != 0) return WinCtx2.FullHouse(three, Value._5);
-            FullHouse_4: if ((groups3 & Card.Mask4) != 0) return WinCtx2.FullHouse(three, Value._4);
-            FullHouse_3: if ((groups3 & Card.Mask3) != 0) return WinCtx2.FullHouse(three, Value._3);
-            FullHouse_2: if ((groups3 & Card.Mask2) != 0) return WinCtx2.FullHouse(three, Value._2);
+            FullHouse_K: if ((groups3 & Card.MaskK) != 0) return WinCtx.FullHouse(three, Value._K);
+            FullHouse_Q: if ((groups3 & Card.MaskQ) != 0) return WinCtx.FullHouse(three, Value._Q);
+            FullHouse_J: if ((groups3 & Card.MaskJ) != 0) return WinCtx.FullHouse(three, Value._J);
+            FullHouse_T: if ((groups3 & Card.MaskT) != 0) return WinCtx.FullHouse(three, Value._T);
+            FullHouse_9: if ((groups3 & Card.Mask9) != 0) return WinCtx.FullHouse(three, Value._9);
+            FullHouse_8: if ((groups3 & Card.Mask8) != 0) return WinCtx.FullHouse(three, Value._8);
+            FullHouse_7: if ((groups3 & Card.Mask7) != 0) return WinCtx.FullHouse(three, Value._7);
+            FullHouse_6: if ((groups3 & Card.Mask6) != 0) return WinCtx.FullHouse(three, Value._6);
+            FullHouse_5: if ((groups3 & Card.Mask5) != 0) return WinCtx.FullHouse(three, Value._5);
+            FullHouse_4: if ((groups3 & Card.Mask4) != 0) return WinCtx.FullHouse(three, Value._4);
+            FullHouse_3: if ((groups3 & Card.Mask3) != 0) return WinCtx.FullHouse(three, Value._3);
+            FullHouse_2: if ((groups3 & Card.Mask2) != 0) return WinCtx.FullHouse(three, Value._2);
             FullHouse_1:
 
-            if ((groups2 & Card.MaskA) != 0) return WinCtx2.FullHouse(three, Value._A);
-            if ((groups2 & Card.MaskK) != 0) return WinCtx2.FullHouse(three, Value._K);
-            if ((groups2 & Card.MaskQ) != 0) return WinCtx2.FullHouse(three, Value._Q);
-            if ((groups2 & Card.MaskJ) != 0) return WinCtx2.FullHouse(three, Value._J);
-            if ((groups2 & Card.MaskT) != 0) return WinCtx2.FullHouse(three, Value._T);
-            if ((groups2 & Card.Mask9) != 0) return WinCtx2.FullHouse(three, Value._9);
-            if ((groups2 & Card.Mask8) != 0) return WinCtx2.FullHouse(three, Value._8);
-            if ((groups2 & Card.Mask7) != 0) return WinCtx2.FullHouse(three, Value._7);
-            if ((groups2 & Card.Mask6) != 0) return WinCtx2.FullHouse(three, Value._6);
-            if ((groups2 & Card.Mask5) != 0) return WinCtx2.FullHouse(three, Value._5);
-            if ((groups2 & Card.Mask4) != 0) return WinCtx2.FullHouse(three, Value._4);
-            if ((groups2 & Card.Mask3) != 0) return WinCtx2.FullHouse(three, Value._3);
-            if ((groups2 & Card.Mask2) != 0) return WinCtx2.FullHouse(three, Value._2);
+            if ((groups2 & Card.MaskA) != 0) return WinCtx.FullHouse(three, Value._A);
+            if ((groups2 & Card.MaskK) != 0) return WinCtx.FullHouse(three, Value._K);
+            if ((groups2 & Card.MaskQ) != 0) return WinCtx.FullHouse(three, Value._Q);
+            if ((groups2 & Card.MaskJ) != 0) return WinCtx.FullHouse(three, Value._J);
+            if ((groups2 & Card.MaskT) != 0) return WinCtx.FullHouse(three, Value._T);
+            if ((groups2 & Card.Mask9) != 0) return WinCtx.FullHouse(three, Value._9);
+            if ((groups2 & Card.Mask8) != 0) return WinCtx.FullHouse(three, Value._8);
+            if ((groups2 & Card.Mask7) != 0) return WinCtx.FullHouse(three, Value._7);
+            if ((groups2 & Card.Mask6) != 0) return WinCtx.FullHouse(three, Value._6);
+            if ((groups2 & Card.Mask5) != 0) return WinCtx.FullHouse(three, Value._5);
+            if ((groups2 & Card.Mask4) != 0) return WinCtx.FullHouse(three, Value._4);
+            if ((groups2 & Card.Mask3) != 0) return WinCtx.FullHouse(three, Value._3);
+            if ((groups2 & Card.Mask2) != 0) return WinCtx.FullHouse(three, Value._2);
 
             // Сет
             Value rest0;
@@ -351,18 +289,18 @@ internal static class Utils
             if ((groups1 & Card.Mask3) != 0) { rest0 = Value._3; goto ThreeRest_2; }
             throw new InvalidOperationException();
 
-            ThreeRest_K: if ((groups1 & Card.MaskK) != 0) return WinCtx2.Three(three, rest0, Value._K);
-            ThreeRest_Q: if ((groups1 & Card.MaskQ) != 0) return WinCtx2.Three(three, rest0, Value._Q);
-            ThreeRest_J: if ((groups1 & Card.MaskJ) != 0) return WinCtx2.Three(three, rest0, Value._J);
-            ThreeRest_T: if ((groups1 & Card.MaskT) != 0) return WinCtx2.Three(three, rest0, Value._T);
-            ThreeRest_9: if ((groups1 & Card.Mask9) != 0) return WinCtx2.Three(three, rest0, Value._9);
-            ThreeRest_8: if ((groups1 & Card.Mask8) != 0) return WinCtx2.Three(three, rest0, Value._8);
-            ThreeRest_7: if ((groups1 & Card.Mask7) != 0) return WinCtx2.Three(three, rest0, Value._7);
-            ThreeRest_6: if ((groups1 & Card.Mask6) != 0) return WinCtx2.Three(three, rest0, Value._6);
-            ThreeRest_5: if ((groups1 & Card.Mask5) != 0) return WinCtx2.Three(three, rest0, Value._5);
-            ThreeRest_4: if ((groups1 & Card.Mask4) != 0) return WinCtx2.Three(three, rest0, Value._4);
-            ThreeRest_3: if ((groups1 & Card.Mask3) != 0) return WinCtx2.Three(three, rest0, Value._3);
-            ThreeRest_2: if ((groups1 & Card.Mask2) != 0) return WinCtx2.Three(three, rest0, Value._2);
+            ThreeRest_K: if ((groups1 & Card.MaskK) != 0) return WinCtx.Three(three, rest0, Value._K);
+            ThreeRest_Q: if ((groups1 & Card.MaskQ) != 0) return WinCtx.Three(three, rest0, Value._Q);
+            ThreeRest_J: if ((groups1 & Card.MaskJ) != 0) return WinCtx.Three(three, rest0, Value._J);
+            ThreeRest_T: if ((groups1 & Card.MaskT) != 0) return WinCtx.Three(three, rest0, Value._T);
+            ThreeRest_9: if ((groups1 & Card.Mask9) != 0) return WinCtx.Three(three, rest0, Value._9);
+            ThreeRest_8: if ((groups1 & Card.Mask8) != 0) return WinCtx.Three(three, rest0, Value._8);
+            ThreeRest_7: if ((groups1 & Card.Mask7) != 0) return WinCtx.Three(three, rest0, Value._7);
+            ThreeRest_6: if ((groups1 & Card.Mask6) != 0) return WinCtx.Three(three, rest0, Value._6);
+            ThreeRest_5: if ((groups1 & Card.Mask5) != 0) return WinCtx.Three(three, rest0, Value._5);
+            ThreeRest_4: if ((groups1 & Card.Mask4) != 0) return WinCtx.Three(three, rest0, Value._4);
+            ThreeRest_3: if ((groups1 & Card.Mask3) != 0) return WinCtx.Three(three, rest0, Value._3);
+            ThreeRest_2: if ((groups1 & Card.Mask2) != 0) return WinCtx.Three(three, rest0, Value._2);
             throw new InvalidOperationException();
         }
 
@@ -416,19 +354,19 @@ internal static class Utils
             TwoPairs2_1: rest = Value._2;
 
             TwoPairs:
-            if ((groups1 & Card.MaskA) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._A ? rest : Value._A);
-            if ((groups1 & Card.MaskK) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._K ? rest : Value._K);
-            if ((groups1 & Card.MaskQ) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._Q ? rest : Value._Q);
-            if ((groups1 & Card.MaskJ) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._J ? rest : Value._J);
-            if ((groups1 & Card.MaskT) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._T ? rest : Value._T);
-            if ((groups1 & Card.Mask9) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._9 ? rest : Value._9);
-            if ((groups1 & Card.Mask8) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._8 ? rest : Value._8);
-            if ((groups1 & Card.Mask7) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._7 ? rest : Value._7);
-            if ((groups1 & Card.Mask6) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._6 ? rest : Value._6);
-            if ((groups1 & Card.Mask5) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._5 ? rest : Value._5);
-            if ((groups1 & Card.Mask4) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._4 ? rest : Value._4);
-            if ((groups1 & Card.Mask3) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._3 ? rest : Value._3);
-            if ((groups1 & Card.Mask2) != 0) return WinCtx2.TwoPairs(pair0, pair1, rest > Value._2 ? rest : Value._2);
+            if ((groups1 & Card.MaskA) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._A ? rest : Value._A);
+            if ((groups1 & Card.MaskK) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._K ? rest : Value._K);
+            if ((groups1 & Card.MaskQ) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._Q ? rest : Value._Q);
+            if ((groups1 & Card.MaskJ) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._J ? rest : Value._J);
+            if ((groups1 & Card.MaskT) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._T ? rest : Value._T);
+            if ((groups1 & Card.Mask9) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._9 ? rest : Value._9);
+            if ((groups1 & Card.Mask8) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._8 ? rest : Value._8);
+            if ((groups1 & Card.Mask7) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._7 ? rest : Value._7);
+            if ((groups1 & Card.Mask6) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._6 ? rest : Value._6);
+            if ((groups1 & Card.Mask5) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._5 ? rest : Value._5);
+            if ((groups1 & Card.Mask4) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._4 ? rest : Value._4);
+            if ((groups1 & Card.Mask3) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._3 ? rest : Value._3);
+            if ((groups1 & Card.Mask2) != 0) return WinCtx.TwoPairs(pair0, pair1, rest > Value._2 ? rest : Value._2);
             throw new InvalidOperationException();
 
             // Пара
@@ -461,17 +399,17 @@ internal static class Utils
             PairRest1_3: if ((groups1 & Card.Mask3) != 0) { rest1 = Value._3; goto PairRest2_2; }
             throw new InvalidOperationException();
 
-            PairRest2_Q: if ((groups1 & Card.MaskQ) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._Q);
-            PairRest2_J: if ((groups1 & Card.MaskJ) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._J);
-            PairRest2_T: if ((groups1 & Card.MaskT) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._T);
-            PairRest2_9: if ((groups1 & Card.Mask9) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._9);
-            PairRest2_8: if ((groups1 & Card.Mask8) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._8);
-            PairRest2_7: if ((groups1 & Card.Mask7) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._7);
-            PairRest2_6: if ((groups1 & Card.Mask6) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._6);
-            PairRest2_5: if ((groups1 & Card.Mask5) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._5);
-            PairRest2_4: if ((groups1 & Card.Mask4) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._4);
-            PairRest2_3: if ((groups1 & Card.Mask3) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._3);
-            PairRest2_2: if ((groups1 & Card.Mask2) != 0) return WinCtx2.Pair(pair0, rest0, rest1, Value._2);
+            PairRest2_Q: if ((groups1 & Card.MaskQ) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._Q);
+            PairRest2_J: if ((groups1 & Card.MaskJ) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._J);
+            PairRest2_T: if ((groups1 & Card.MaskT) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._T);
+            PairRest2_9: if ((groups1 & Card.Mask9) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._9);
+            PairRest2_8: if ((groups1 & Card.Mask8) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._8);
+            PairRest2_7: if ((groups1 & Card.Mask7) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._7);
+            PairRest2_6: if ((groups1 & Card.Mask6) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._6);
+            PairRest2_5: if ((groups1 & Card.Mask5) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._5);
+            PairRest2_4: if ((groups1 & Card.Mask4) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._4);
+            PairRest2_3: if ((groups1 & Card.Mask3) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._3);
+            PairRest2_2: if ((groups1 & Card.Mask2) != 0) return WinCtx.Pair(pair0, rest0, rest1, Value._2);
             throw new InvalidOperationException();
         }
 
@@ -492,51 +430,57 @@ internal static class Utils
         if ((groups1 & Card.Mask3) != 0) singleValues[singleValuesIndex++] = Value._3;
         if ((groups1 & Card.Mask2) != 0) singleValues[singleValuesIndex++] = Value._2;
 
-        return WinCtx2.Single(singleValues);
+        return WinCtx.Single(singleValues);
     }
 
-    private readonly struct WinCtx2
+    private readonly struct WinCtx
     {
         public WinKind Kind { get; }
+        public byte ValueCount { get; }
         public Value Value0 { get; }
         public Value Value1 { get; }
         public Value Value2 { get; }
         public Value Value3 { get; }
         public Value Value4 { get; }
 
-        private WinCtx2(WinKind kind, Value value0)
+        private WinCtx(WinKind kind, Value value0)
         {
             Kind = kind;
+            ValueCount = 1;
             Value0 = value0;
         }
 
-        private WinCtx2(WinKind kind, Value value0, Value value1)
+        private WinCtx(WinKind kind, Value value0, Value value1)
         {
             Kind = kind;
+            ValueCount = 2;
             Value0 = value0;
             Value1 = value1;
         }
 
-        private WinCtx2(WinKind kind, Value value0, Value value1, Value value2)
+        private WinCtx(WinKind kind, Value value0, Value value1, Value value2)
         {
             Kind = kind;
+            ValueCount = 3;
             Value0 = value0;
             Value1 = value1;
             Value2 = value2;
         }
 
-        private WinCtx2(WinKind kind, Value value0, Value value1, Value value2, Value value3)
+        private WinCtx(WinKind kind, Value value0, Value value1, Value value2, Value value3)
         {
             Kind = kind;
+            ValueCount = 4;
             Value0 = value0;
             Value1 = value1;
             Value2 = value2;
             Value3 = value3;
         }
 
-        private WinCtx2(WinKind kind, Value value0, Value value1, Value value2, Value value3, Value value4)
+        private WinCtx(WinKind kind, Value value0, Value value1, Value value2, Value value3, Value value4)
         {
             Kind = kind;
+            ValueCount = 5;
             Value0 = value0;
             Value1 = value1;
             Value2 = value2;
@@ -544,49 +488,49 @@ internal static class Utils
             Value4 = value4;
         }
 
-        public static WinCtx2 Single(IReadOnlyList<Value> values)
+        public static WinCtx Single(IReadOnlyList<Value> values)
         {
             Debug.Assert(values.Count >= 5);
             return new(WinKind.Single, values[0], values[1], values[2], values[3], values[4]);
         }
 
-        public static WinCtx2 Pair(Value pair, Value rest0, Value rest1, Value rest2)
+        public static WinCtx Pair(Value pair, Value rest0, Value rest1, Value rest2)
         {
             return new(WinKind.Pair, value0: pair, value1: rest0, value2: rest1, value3: rest2);
         }
 
-        public static WinCtx2 TwoPairs(Value pair0, Value pair1, Value rest)
+        public static WinCtx TwoPairs(Value pair0, Value pair1, Value rest)
         {
             return new(WinKind.TwoPairs, value0: pair0, value1: pair1, value2: rest);
         }
 
-        public static WinCtx2 Three(Value three, Value rest0, Value rest1)
+        public static WinCtx Three(Value three, Value rest0, Value rest1)
         {
             return new(WinKind.Three, value0: three, value1: rest0, value2: rest1);
         }
 
-        public static WinCtx2 Straight(Value major)
+        public static WinCtx Straight(Value major)
         {
             return new(WinKind.Straight, value0: major);
         }
 
-        public static WinCtx2 Flush(IReadOnlyList<Value> values)
+        public static WinCtx Flush(IReadOnlyList<Value> values)
         {
             Debug.Assert(values.Count >= 5);
             return new(WinKind.Flush, values[0], values[1], values[2], values[3], values[4]);
         }
 
-        public static WinCtx2 FullHouse(Value tree, Value two)
+        public static WinCtx FullHouse(Value tree, Value two)
         {
             return new(WinKind.FullHouse, value0: tree, value1: two);
         }
 
-        public static WinCtx2 Four(Value four, Value rest)
+        public static WinCtx Four(Value four, Value rest)
         {
             return new(WinKind.Four, value0: four, value1: rest);
         }
 
-        public static WinCtx2 StraightFlush(Value major)
+        public static WinCtx StraightFlush(Value major)
         {
             return new(WinKind.StraightFlush, value0: major);
         }
@@ -603,407 +547,6 @@ internal static class Utils
         FullHouse,
         Four,
         StraightFlush
-    }
-
-    public static Winner GetWinner(IReadOnlyList<Card> player, IReadOnlyList<Card> casino, IReadOnlyList<Card> board)
-    {
-        Debug.Assert(player.Count == 2);
-        Debug.Assert(casino.Count == 2);
-        Debug.Assert(board.Count == 5);
-
-        var playerCtx = GetCtx(playerOrCasino: player, board: board);
-        var casinoCtx = GetCtx(playerOrCasino: casino, board: board);
-
-        // Стрит-флеш
-
-        if (playerCtx.StraightFlush.Count != 0)
-        {
-            if (casinoCtx.StraightFlush.Count != 0)
-                return playerCtx.StraightFlush[0].Value == casinoCtx.StraightFlush[0].Value ? Winner.Split
-                    : playerCtx.StraightFlush[0].Value > casinoCtx.StraightFlush[0].Value ? Winner.Player : Winner.Casino;
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.StraightFlush.Count != 0)
-            return Winner.Casino;
-
-        // Каре
-
-        if (playerCtx.Group1.Count == 4)
-        {
-            if (casinoCtx.Group1.Count == 4)
-            {
-                if (playerCtx.Group1[0].Value != casinoCtx.Group1[0].Value)
-                    return playerCtx.Group1[0].Value > casinoCtx.Group1[0].Value ? Winner.Player : Winner.Casino;
-
-                return playerCtx.Rest[0].Value == casinoCtx.Rest[0].Value ? Winner.Split
-                    : playerCtx.Rest[0].Value > casinoCtx.Rest[0].Value ? Winner.Player : Winner.Casino;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Group1.Count == 4)
-            return Winner.Casino;
-
-        // Фулл-хаус
-
-        if (playerCtx.Group1.Count == 3 && playerCtx.Group2.Count == 2)
-        {
-            if (casinoCtx.Group1.Count == 3 && casinoCtx.Group2.Count == 2)
-            {
-                if (playerCtx.Group1[0].Value == casinoCtx.Group1[0].Value)
-                    return playerCtx.Group2[0].Value == casinoCtx.Group2[0].Value ? Winner.Split
-                        : playerCtx.Group2[0].Value > casinoCtx.Group2[0].Value ? Winner.Player : Winner.Casino;
-                else
-                    return playerCtx.Group1[0].Value > casinoCtx.Group1[0].Value ? Winner.Player : Winner.Casino;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Group1.Count == 3 && casinoCtx.Group2.Count == 2)
-            return Winner.Casino;
-
-        // Флеш
-
-        if (playerCtx.Flush.Count != 0)
-        {
-            if (casinoCtx.Flush.Count != 0)
-            {
-                for (var i = 0; i < playerCtx.Flush.Count; i++)
-                    if (playerCtx.Flush[i].Value != casinoCtx.Flush[i].Value)
-                        return playerCtx.Flush[i].Value > casinoCtx.Flush[i].Value ? Winner.Player : Winner.Casino;
-
-                return Winner.Split;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Flush.Count != 0)
-            return Winner.Casino;
-
-        // Стрит
-
-        if (playerCtx.Straight.Count != 0)
-        {
-            if (casinoCtx.Straight.Count != 0)
-                return playerCtx.Straight[0].Value == casinoCtx.Straight[0].Value ? Winner.Split
-                    : playerCtx.Straight[0].Value > casinoCtx.Straight[0].Value ? Winner.Player : Winner.Casino;
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Straight.Count != 0)
-            return Winner.Casino;
-
-        // Сет
-
-        if (playerCtx.Group1.Count == 3)
-        {
-            Debug.Assert(playerCtx.Group2.Count == 0);
-            Debug.Assert(playerCtx.Rest.Count == 2);
-
-            if (casinoCtx.Group1.Count == 3)
-            {
-                Debug.Assert(casinoCtx.Group2.Count == 0);
-                Debug.Assert(casinoCtx.Rest.Count == 2);
-
-                if (playerCtx.Group1[0].Value == casinoCtx.Group1[0].Value)
-                {
-                    if (playerCtx.Rest[0].Value == casinoCtx.Rest[0].Value)
-                        return playerCtx.Rest[1].Value == casinoCtx.Rest[1].Value ? Winner.Split
-                            : playerCtx.Rest[1].Value > casinoCtx.Rest[1].Value ? Winner.Player : Winner.Casino;
-                    else
-                        return playerCtx.Rest[0].Value > casinoCtx.Rest[0].Value ? Winner.Player : Winner.Casino;
-                }
-                else
-                    return playerCtx.Group1[0].Value > casinoCtx.Group1[0].Value ? Winner.Player : Winner.Casino;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Group1.Count == 3)
-        {
-            Debug.Assert(casinoCtx.Group2.Count == 0);
-            Debug.Assert(casinoCtx.Rest.Count == 2);
-            return Winner.Casino;
-        }
-
-        // Две пары
-
-        if (playerCtx.Group1.Count == 2 && playerCtx.Group2.Count == 2)
-        {
-            Debug.Assert(playerCtx.Rest.Count == 1);
-
-            if (casinoCtx.Group1.Count == 2 && casinoCtx.Group2.Count == 2)
-            {
-                Debug.Assert(casinoCtx.Rest.Count == 1);
-
-                if (playerCtx.Group1[0].Value == casinoCtx.Group1[0].Value)
-                {
-                    if (playerCtx.Group2[0].Value == casinoCtx.Group2[0].Value)
-                        return playerCtx.Rest[0].Value == casinoCtx.Rest[0].Value ? Winner.Split
-                            : playerCtx.Rest[0].Value > casinoCtx.Rest[0].Value ? Winner.Player : Winner.Casino;
-                    else
-                        return playerCtx.Group2[0].Value > casinoCtx.Group2[0].Value ? Winner.Player : Winner.Casino;
-                }
-                else
-                    return playerCtx.Group1[0].Value > casinoCtx.Group1[0].Value ? Winner.Player : Winner.Casino;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Group1.Count == 2 && casinoCtx.Group2.Count == 2)
-        {
-            Debug.Assert(casinoCtx.Rest.Count == 1);
-            return Winner.Casino;
-        }
-
-        // Пара
-
-        if (playerCtx.Group1.Count == 2)
-        {
-            Debug.Assert(playerCtx.Group2.Count == 0);
-            Debug.Assert(playerCtx.Rest.Count == 3);
-
-            if (casinoCtx.Group1.Count == 2)
-            {
-                Debug.Assert(casinoCtx.Group2.Count == 0);
-                Debug.Assert(casinoCtx.Rest.Count == 3);
-
-                if (playerCtx.Group1[0].Value == casinoCtx.Group1[0].Value)
-                {
-                    for (var i = 0; i < playerCtx.Rest.Count; i++)
-                        if (playerCtx.Rest[i].Value != casinoCtx.Rest[i].Value)
-                            return playerCtx.Rest[i].Value > casinoCtx.Rest[i].Value ? Winner.Player : Winner.Casino;
-
-                    return Winner.Split;
-                }
-                else
-                    return playerCtx.Group1[0].Value > casinoCtx.Group1[0].Value ? Winner.Player : Winner.Casino;
-            }
-            else
-                return Winner.Player;
-        }
-        else if (casinoCtx.Group1.Count == 2)
-        {
-            Debug.Assert(casinoCtx.Group2.Count == 0);
-            Debug.Assert(casinoCtx.Rest.Count == 3);
-            return Winner.Casino;
-        }
-
-        // Старшая карта
-
-        Debug.Assert(playerCtx.Rest.Count == 5);
-        Debug.Assert(casinoCtx.Rest.Count == 5);
-
-        for (var i = 0; i < playerCtx.Rest.Count; i++)
-            if (playerCtx.Rest[i].Value != casinoCtx.Rest[i].Value)
-                return playerCtx.Rest[i].Value > casinoCtx.Rest[i].Value ? Winner.Player : Winner.Casino;
-
-        return Winner.Split;
-    }
-
-    private static WinCtx GetCtx(IReadOnlyList<Card> playerOrCasino, IReadOnlyList<Card> board)
-    {
-        const int lastCardIndex = 6;
-        var cards = playerOrCasino.Concat(board).OrderByDescending(x => x.Value).ToList();
-        var spades = new List<Card>(7);
-        var hearts = new List<Card>(7);
-        var diamonds = new List<Card>(7);
-        var clubs = new List<Card>(7);
-        var straightFlush = new List<Card>(5);
-        var straight = new List<Card>(5) { cards[0] };
-        var flush = new List<Card>(5);
-        var groups = new List<List<Card>>(7) { new List<Card>(4) { cards[0] } };
-        var maxGroupSize = 1;
-        var maxGroupIndex = 0;
-
-        for (var i = 0; i <= lastCardIndex; i++)
-        {
-            var card = cards[i];
-
-            var suitList = card.Suit switch
-            {
-                Suit.Spades => spades,
-                Suit.Hearts => hearts,
-                Suit.Diamonds => diamonds,
-                Suit.Clubs => clubs,
-                _ => throw new InvalidOperationException()
-            };
-
-            suitList.Add(card);
-
-            if (suitList.Count == 5)
-                flush = suitList;
-
-            if (i == 0)
-                continue;
-
-            var diff = cards[i - 1].Value - card.Value;
-
-            if (diff == 0)
-            {
-                var groupIndex = groups.Count - 1;
-                var group = groups[groupIndex];
-                group.Add(card);
-
-                if (group.Count > maxGroupSize)
-                {
-                    maxGroupSize++;
-                    maxGroupIndex = groupIndex;
-                }
-            }
-            else
-            {
-                groups.Add(new List<Card>(4) { card });
-
-                if (diff == 1)
-                {
-                    if (straight.Count != 5)
-                        straight.Add(card);
-                }
-                else if (straight.Count != 5)
-                {
-                    straight.Clear();
-                    straight.Add(card);
-                }
-            }
-        }
-
-        if (straight.Count == 4 && straight[3].Value == Value._2 && cards[0].Value == Value._A)
-            straight.Add(cards[0]);
-
-        else if (straight.Count != 5)
-            straight.Clear();
-
-        Debug.Assert(maxGroupSize <= 4);
-        IReadOnlyList<Card> group1 = Array.Empty<Card>();
-        IReadOnlyList<Card> group2 = Array.Empty<Card>();
-        var rest = new List<Card>(5);
-
-        if (flush.Count >= 5)
-        {
-            straightFlush.Add(flush[0]);
-
-            for (var i = 1; i < flush.Count; i++)
-            {
-                var card = flush[i];
-
-                if (flush[i - 1].Value - card.Value == 1)
-                {
-                    straightFlush.Add(card);
-
-                    if (straightFlush.Count == 5)
-                        goto Return;
-                }
-                else
-                {
-                    straightFlush.Clear();
-                    straightFlush.Add(card);
-                }
-            }
-
-            if (straightFlush.Count == 4 && straightFlush[3].Value == Value._2 && flush[0].Value == Value._A)
-                straightFlush.Add(flush[0]);
-
-            else if (straightFlush.Count != 5)
-                straightFlush.Clear();
-        }
-
-        if (maxGroupSize == 4)
-        {
-            group1 = groups[maxGroupIndex];
-            rest = new List<Card> { groups[maxGroupIndex == 0 ? 1 : 0][0] };
-        }
-        else if (maxGroupSize == 3)
-        {
-            group1 = groups[maxGroupIndex];
-
-            for (var i = 0; i < groups.Count; i++)
-                if (i != maxGroupIndex)
-                {
-                    var group = groups[i];
-
-                    if (group.Count == 3)
-                    {
-                        group2 = group.Take(2).ToList();
-                        break;
-                    }
-                    else if (group.Count == 2)
-                    {
-                        group2 = group;
-                        break;
-                    }
-                    else
-                        rest.Add(group[0]);
-                }
-
-            rest = rest.Take(5 - group1.Count - group2.Count).ToList();
-        }
-        else if (maxGroupSize == 2)
-        {
-            group1 = groups[maxGroupIndex];
-
-            for (var i = 0; i < groups.Count; i++)
-                if (i != maxGroupIndex)
-                {
-                    var group = groups[i];
-
-                    if (group.Count == 2 && group2.Count == 0)
-                        group2 = group;
-                    else
-                        rest.Add(group[0]);
-                }
-
-            rest = rest.Take(5 - group1.Count - group2.Count).ToList();
-        }
-        else
-        {
-            group1 = Array.Empty<Card>();
-            rest = cards.Take(5).ToList();
-        }
-
-        Return:
-
-        flush = flush.Take(5).ToList();
-        Debug.Assert(straightFlush.Count == 5 || straightFlush.Count == 0);
-        Debug.Assert(flush.Count == 5 || flush.Count == 0);
-        Debug.Assert(straight.Count == 5 || straight.Count == 0);
-        Debug.Assert(group1.Count >= group2.Count);
-
-        return new WinCtx(
-            straightFlush: straightFlush,
-            flush: flush,
-            straight: straight,
-            group1: group1,
-            group2: group2,
-            rest: rest
-        );
-    }
-
-    private sealed class WinCtx
-    {
-        public IReadOnlyList<Card> StraightFlush;
-        public IReadOnlyList<Card> Flush;
-        public IReadOnlyList<Card> Straight;
-        public IReadOnlyList<Card> Group1;
-        public IReadOnlyList<Card> Group2;
-        public IReadOnlyList<Card> Rest;
-
-        public WinCtx(
-            IReadOnlyList<Card> straightFlush,
-            IReadOnlyList<Card> flush,
-            IReadOnlyList<Card> straight,
-            IReadOnlyList<Card> group1,
-            IReadOnlyList<Card> group2,
-            IReadOnlyList<Card> rest)
-        {
-            StraightFlush = straightFlush;
-            Flush = flush;
-            Straight = straight;
-            Group1 = group1;
-            Group2 = group2;
-            Rest = rest;
-        }
     }
 }
 

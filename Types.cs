@@ -83,19 +83,19 @@ internal sealed class Card
     {
         var value = Value switch
         {
-            Value._2 => "2",
-            Value._3 => "3",
-            Value._4 => "4",
-            Value._5 => "5",
-            Value._6 => "6",
-            Value._7 => "7",
-            Value._8 => "8",
-            Value._9 => "9",
-            Value._T => "T",
-            Value._J => "J",
-            Value._Q => "Q",
-            Value._K => "K",
             Value._A => "A",
+            Value._K => "K",
+            Value._Q => "Q",
+            Value._J => "J",
+            Value._T => "T",
+            Value._9 => "9",
+            Value._8 => "8",
+            Value._7 => "7",
+            Value._6 => "6",
+            Value._5 => "5",
+            Value._4 => "4",
+            Value._3 => "3",
+            Value._2 => "2",
             _ => throw new InvalidOperationException()
         };
 
@@ -131,8 +131,8 @@ internal enum Value : byte
 
 internal enum Suit : byte
 {
-    Spades,   // Пики
-    Hearts,   // Черви
-    Diamonds, // Бубны
-    Clubs     // Трефы 
+    Spades = 4,   // Пики
+    Hearts = 3,   // Черви
+    Diamonds = 2, // Бубны
+    Clubs = 1     // Трефы 
 }
