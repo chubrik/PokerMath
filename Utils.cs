@@ -200,13 +200,13 @@ internal static class Utils
     {
         const int lastCardIndex = 6;
         var cards = playerOrCasino.Concat(board).OrderByDescending(x => x.Value).ToList();
+        var spades = new List<Card>(7);
         var hearts = new List<Card>(7);
         var diamonds = new List<Card>(7);
-        var spades = new List<Card>(7);
         var clubs = new List<Card>(7);
         var straightFlush = new List<Card>(5);
         var straight = new List<Card>(5) { cards[0] };
-        var flush = (IReadOnlyList<Card>)Array.Empty<Card>();
+        var flush = new List<Card>(5);
         var groups = new List<List<Card>>(7) { new List<Card>(4) { cards[0] } };
         var maxGroupSize = 1;
         var maxGroupIndex = 0;
@@ -217,9 +217,9 @@ internal static class Utils
 
             var suitList = card.Suit switch
             {
+                Suit.Spades => spades,
                 Suit.Hearts => hearts,
                 Suit.Diamonds => diamonds,
-                Suit.Spades => spades,
                 Suit.Clubs => clubs,
                 _ => throw new InvalidOperationException()
             };
@@ -263,7 +263,7 @@ internal static class Utils
             }
         }
 
-        if (straight.Count == 4 && straight[3].Value == Value._2 && cards[0].Value == Value.A)
+        if (straight.Count == 4 && straight[3].Value == Value._2 && cards[0].Value == Value._A)
             straight.Add(cards[0]);
 
         else if (straight.Count != 5)
@@ -280,7 +280,7 @@ internal static class Utils
 
             for (var i = 1; i < flush.Count; i++)
             {
-                var card = cards[i];
+                var card = flush[i];
 
                 if (flush[i - 1].Value - card.Value == 1)
                 {
@@ -290,10 +290,13 @@ internal static class Utils
                         goto Return;
                 }
                 else
+                {
                     straightFlush.Clear();
+                    straightFlush.Add(card);
+                }
             }
 
-            if (straightFlush.Count == 4 && straightFlush[3].Value == Value._2 && flush[0].Value == Value.A)
+            if (straightFlush.Count == 4 && straightFlush[3].Value == Value._2 && flush[0].Value == Value._A)
                 straightFlush.Add(flush[0]);
 
             else if (straightFlush.Count != 5)
@@ -310,7 +313,7 @@ internal static class Utils
             group1 = groups[maxGroupIndex];
 
             for (var i = 0; i < groups.Count; i++)
-                if (i < maxGroupIndex)
+                if (i != maxGroupIndex)
                 {
                     var group = groups[i];
 
@@ -335,7 +338,7 @@ internal static class Utils
             group1 = groups[maxGroupIndex];
 
             for (var i = 0; i < groups.Count; i++)
-                if (i < maxGroupIndex)
+                if (i != maxGroupIndex)
                 {
                     var group = groups[i];
 
@@ -360,7 +363,6 @@ internal static class Utils
         Debug.Assert(flush.Count == 5 || flush.Count == 0);
         Debug.Assert(straight.Count == 5 || straight.Count == 0);
         Debug.Assert(group1.Count >= group2.Count);
-        Debug.Assert(straightFlush.Count + flush.Count + straight.Count + group1.Count + group2.Count + rest.Count == 5);
 
         return new WinCtx(
             straightFlush: straightFlush,

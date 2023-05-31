@@ -18,19 +18,13 @@ internal sealed class Deck
         _cards = cards;
     }
 
-    public Card Pop()
-    {
-        var card = _cards[_index++];
-        card.Use();
-        return card;
-    }
+    public Card Pop() => _cards[_index++];
 }
 
-internal sealed class Card
+internal readonly struct Card
 {
     public Value Value { get; }
     public Suit Suit { get; }
-    public bool InUse { get; private set; }
 
     public Card(Value value, Suit suit)
     {
@@ -38,13 +32,10 @@ internal sealed class Card
         Suit = suit;
     }
 
-    public void Use() => InUse = true;
-
     public override string ToString()
     {
         var value = Value switch
         {
-            Value.A => "A",
             Value._2 => "2",
             Value._3 => "3",
             Value._4 => "4",
@@ -53,32 +44,28 @@ internal sealed class Card
             Value._7 => "7",
             Value._8 => "8",
             Value._9 => "9",
-            Value.T => "T",
-            Value.J => "J",
-            Value.Q => "Q",
-            Value.K => "K",
+            Value._T => "T",
+            Value._J => "J",
+            Value._Q => "Q",
+            Value._K => "K",
+            Value._A => "A",
             _ => throw new InvalidOperationException()
         };
 
         var suit = Suit switch
         {
+            Suit.Spades => "♠",
             Suit.Hearts => "♥",
             Suit.Diamonds => "♦",
-            Suit.Spades => "♠",
             Suit.Clubs => "♣",
             _ => throw new InvalidOperationException()
         };
 
-        var str = value + suit;
-
-        if (InUse)
-            str += " (used)";
-
-        return str;
+        return value + suit;
     }
 }
 
-internal enum Value
+internal enum Value : byte
 {
     _2 = 2,
     _3,
@@ -88,17 +75,17 @@ internal enum Value
     _7,
     _8,
     _9,
-    T,
-    J,
-    Q,
-    K,
-    A,
+    _T,
+    _J,
+    _Q,
+    _K,
+    _A,
 }
 
-internal enum Suit
+internal enum Suit : byte
 {
+    Spades,   // Пики
     Hearts,   // Черви
     Diamonds, // Бубны
-    Spades,   // Пики
     Clubs     // Трефы 
 }
