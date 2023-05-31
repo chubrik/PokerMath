@@ -5,6 +5,20 @@ using static PokerMath.Utils;
 
 const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 
+//for (var i = 0; ; i++)
+//{
+//    var deck = new Deck();
+//    var player = new List<Card> { deck.Pop(), deck.Pop() };
+//    var casino = new List<Card> { deck.Pop(), deck.Pop() };
+//    var board = new List<Card> { deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop() };
+//    var winner = GetWinner(player, casino, board);
+//    var winner2 = GetWinner2(player, casino, board);
+//    Debug.Assert(winner == winner2);
+
+//    if (i % 100000 == 0)
+//        Console.WriteLine(i);
+//}
+
 foreach (var player in AllHands)
 {
     var allCards = GetAllCards();
@@ -15,6 +29,8 @@ foreach (var player in AllHands)
 
     var board = new Card[5];
     var casino = new Card[2];
+    var prevTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    var count = 0L;
 
     // Флоп
     for (var i0 = 0; i0 < AllCardsCount - 2; i0++)
@@ -73,10 +89,14 @@ foreach (var player in AllHands)
                                 casino[1] = card6;
 
                                 // Игра
-                                var winner = GetWinner(player, casino, board);
+                                var winner = GetWinner2(player, casino, board);
+                                //var winner2 = GetWinner2(player, casino, board);
+                                //Debug.Assert(winner == winner2);
                                 if (winner == Winner.Player) winCount++;
                                 else if (winner == Winner.Casino) loseCount++;
                                 else splitCount++;
+
+                                count++;
 
                                 //card6.InUse = false;
                             }
@@ -94,11 +114,16 @@ foreach (var player in AllHands)
 
                 Debug.Assert(winCount + loseCount + splitCount == FlopGameCount);
 
+                var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                var elapsed = time - prevTime;
+                prevTime = time;
+
                 Console.WriteLine(
                     $"{player[0]} {player[1]} - " +
                     $"{board[0]} {board[1]} {board[2]} ... - " +
-                    $"wins: {winCount / (float)(FlopGameCount - splitCount):0.00000}, " +
-                    $"ties: {splitCount / (float)FlopGameCount:0.00000}");
+                    $"wins: {winCount / (float)(FlopGameCount - splitCount):0.00000}, ",
+                    $"d`ties: {splitCount / (float)FlopGameCount:0.00000}, " +
+                    $"time: {elapsed} ms");
             }
 
             usageMap[card1] = false;
