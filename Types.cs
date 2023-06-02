@@ -50,33 +50,7 @@ internal sealed class Card
     {
         Value = value;
         Suit = suit;
-
-        Mask += suit switch
-        {
-            Suit.Spades => MaskS,
-            Suit.Hearts => MaskH,
-            Suit.Diamonds => MaskD,
-            Suit.Clubs => MaskC,
-            _ => throw new InvalidOperationException()
-        };
-
-        Mask += value switch
-        {
-            Value._A => MaskA,
-            Value._K => MaskK,
-            Value._Q => MaskQ,
-            Value._J => MaskJ,
-            Value._T => MaskT,
-            Value._9 => Mask9,
-            Value._8 => Mask8,
-            Value._7 => Mask7,
-            Value._6 => Mask6,
-            Value._5 => Mask5,
-            Value._4 => Mask4,
-            Value._3 => Mask3,
-            Value._2 => Mask2,
-            _ => throw new InvalidOperationException()
-        };
+        Mask = _valueToMask[(int)value] | _suitToMask[(int)suit];
     }
 
     public override string ToString()
@@ -110,9 +84,37 @@ internal sealed class Card
 
         return value + suit;
     }
+
+    private static readonly ulong[] _valueToMask = new[]
+    {
+        0UL,
+        0UL,
+        Mask2,
+        Mask3,
+        Mask4,
+        Mask5,
+        Mask6,
+        Mask7,
+        Mask8,
+        Mask9,
+        MaskT,
+        MaskJ,
+        MaskQ,
+        MaskK,
+        MaskA,
+    };
+
+    private static readonly ulong[] _suitToMask = new[]
+    {
+        0UL,
+        MaskC,
+        MaskD,
+        MaskH,
+        MaskS,
+    };
 }
 
-internal enum Value : byte
+internal enum Value
 {
     _2 = 2,
     _3,
@@ -129,10 +131,10 @@ internal enum Value : byte
     _A,
 }
 
-internal enum Suit : byte
+internal enum Suit
 {
     Spades = 4,   // Пики
     Hearts = 3,   // Черви
     Diamonds = 2, // Бубны
-    Clubs = 1     // Трефы 
+    Clubs = 1,    // Трефы 
 }

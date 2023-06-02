@@ -11,8 +11,8 @@ const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 //    var casino = new List<Card> { deck.Pop(), deck.Pop() };
 //    var board = new List<Card> { deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop() };
 //    var winner = Utils.GetWinner(player, casino, board);
-//    var winner2 = UtilsOld.GetWinner(player, casino, board);
-//    Debug.Assert(winner == winner2);
+//    var winnerOld = UtilsOld.GetWinner(player, casino, board);
+//    Debug.Assert(winner == winnerOld);
 
 //    if (i % 100000 == 0)
 //        Console.WriteLine(i);
