@@ -53,6 +53,8 @@ internal sealed class Card
         Mask = _valueToMask[(int)value] | _suitToMask[(int)suit];
     }
 
+    public int Index => (int)Suit * 13 + (int)Value;
+
     public override string ToString()
     {
         var value = Value switch
