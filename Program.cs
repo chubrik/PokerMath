@@ -2,6 +2,14 @@
 using System.Diagnostics;
 using static PokerMath.Constants;
 
+args = new[] { "game" };
+
+if (args.Length > 0 && args[0] == "game")
+{
+    Game.Start();
+    return;
+}
+
 const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 
 //for (var i = 0; ; i++)
@@ -10,7 +18,7 @@ const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 //    var player = new List<Card> { deck.Pop(), deck.Pop() };
 //    var casino = new List<Card> { deck.Pop(), deck.Pop() };
 //    var board = new List<Card> { deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop(), deck.Pop() };
-//    var winner = Utils.GetWinner(player, casino, board);
+//    var winner = Utils.GetWinCtx(player, casino, board).Winner;
 //    var winnerOld = UtilsOld.GetWinner(player, casino, board);
 //    Debug.Assert(winner == winnerOld);
 
@@ -90,7 +98,7 @@ for (var handIndex = 0; handIndex < AllHands.Count; handIndex++)
                                 casino[1] = card6;
 
                                 // Игра
-                                var winner = Utils.GetWinner(player, casino, board);
+                                var winner = Utils.GetWinCtx(player, casino, board).Winner;
                                 if (winner == Winner.Player) winCount++;
                                 else if (winner == Winner.Casino) loseCount++;
                                 else splitCount++;
