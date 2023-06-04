@@ -1,5 +1,7 @@
 ﻿namespace PokerMath;
 
+using static PokerMath.Constants;
+
 internal sealed class Deck
 {
     private readonly Card[] _cards;
@@ -7,13 +9,7 @@ internal sealed class Deck
 
     public Deck()
     {
-        var cards = new Card[52];
-        var index = 0;
-
-        foreach (var suit in Enum.GetValues<Suit>())
-            foreach (var value in Enum.GetValues<Value>())
-                cards[index++] = new Card(value, suit);
-
+        var cards = AllCards.ToArray();
         cards.Shuffle();
         _cards = cards;
     }
@@ -23,25 +19,6 @@ internal sealed class Deck
 
 internal sealed class Card
 {
-    //                                      Spad Hear Diam Club  A   K   Q   J   T   9   8   7   6   5   4   3   2
-    public const ulong MaskS = 0b_000000000_0001_0000_0000_0000_000_000_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskH = 0b_000000000_0000_0001_0000_0000_000_000_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskD = 0b_000000000_0000_0000_0001_0000_000_000_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskC = 0b_000000000_0000_0000_0000_0001_000_000_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskA = 0b_000000000_0000_0000_0000_0000_001_000_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskK = 0b_000000000_0000_0000_0000_0000_000_001_000_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskQ = 0b_000000000_0000_0000_0000_0000_000_000_001_000_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskJ = 0b_000000000_0000_0000_0000_0000_000_000_000_001_000_000_000_000_000_000_000_000_000;
-    public const ulong MaskT = 0b_000000000_0000_0000_0000_0000_000_000_000_000_001_000_000_000_000_000_000_000_000;
-    public const ulong Mask9 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_001_000_000_000_000_000_000_000;
-    public const ulong Mask8 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_001_000_000_000_000_000_000;
-    public const ulong Mask7 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_001_000_000_000_000_000;
-    public const ulong Mask6 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_000_001_000_000_000_000;
-    public const ulong Mask5 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_000_000_001_000_000_000;
-    public const ulong Mask4 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_000_000_000_001_000_000;
-    public const ulong Mask3 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_000_000_000_000_001_000;
-    public const ulong Mask2 = 0b_000000000_0000_0000_0000_0000_000_000_000_000_000_000_000_000_000_000_000_000_001;
-
     public Value Value { get; }
     public Suit Suit { get; }
     public ulong Mask { get; }
@@ -91,28 +68,28 @@ internal sealed class Card
     {
         0UL,
         0UL,
-        Mask2,
-        Mask3,
-        Mask4,
-        Mask5,
-        Mask6,
-        Mask7,
-        Mask8,
-        Mask9,
-        MaskT,
-        MaskJ,
-        MaskQ,
-        MaskK,
-        MaskA,
+        Utils.Mask_2,
+        Utils.Mask_3,
+        Utils.Mask_4,
+        Utils.Mask_5,
+        Utils.Mask_6,
+        Utils.Mask_7,
+        Utils.Mask_8,
+        Utils.Mask_9,
+        Utils.Mask_T,
+        Utils.Mask_J,
+        Utils.Mask_Q,
+        Utils.Mask_K,
+        Utils.Mask_A,
     };
 
     private static readonly ulong[] _suitToMask = new[]
     {
         0UL,
-        MaskC,
-        MaskD,
-        MaskH,
-        MaskS,
+        Utils.Mask_Clubs,
+        Utils.Mask_Diamonds,
+        Utils.Mask_Hearts,
+        Utils.Mask_Spades,
     };
 }
 

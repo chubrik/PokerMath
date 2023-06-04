@@ -1,0 +1,16 @@
+{
+  "profiles": {
+    "Benchmark": {
+      "commandName": "Project",
+      "commandLineArgs": "benchmark"
+    },
+    "Bruteforce": {
+      "commandName": "Project",
+      "commandLineArgs": "bruteforce"
+    },
+    "Game": {
+      "commandName": "Project",
+      "commandLineArgs": "game"
+    }
+  }
+}

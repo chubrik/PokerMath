@@ -4,7 +4,7 @@ internal class Constants
 {
     public const int AllCardsCount = 52;
 
-    public static IReadOnlyList<Card> GetAllCards() => new List<Card>
+    public static readonly IReadOnlyList<Card> AllCards = new List<Card>
     {
         new Card(Value._A, Suit.Spades),
         new Card(Value._A, Suit.Hearts),

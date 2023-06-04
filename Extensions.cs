@@ -19,7 +19,7 @@ public static class Extensions
         }
     }
 
-    public static string E(this ulong value)
+    public static string Bits(this ulong value)
     {
         var bytes = BitConverter.GetBytes(value);
         var bits = new BitArray(bytes);

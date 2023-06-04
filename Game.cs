@@ -9,10 +9,13 @@ internal class Game
         Console.Clear();
         Console.WriteLine("W`Welcome to Speed Poker game!");
         Console.WriteLine();
-        Console.WriteLine("C`1.", " Normal game");
-        Console.WriteLine("C`2.", " Show after fold");
+        Console.WriteLine("C`1.", " Real game");
+        Console.WriteLine("C`2.", " Gambling - show cards after fold");
+        //Console.WriteLine("C`3.", " Training - analyse your moves");
+        //Console.WriteLine("C`4.", " Cheating - hints of chance");
         Console.WriteLine();
         Console.Write("Select ", "C`[1]", " or ", "C`[2]", " mode: ");
+        //Console.Write("Select ", "C`[1]", ", ", "C`[2]", ", ", "C`[3]", " or ", "C`[4]", " mode: ");
 
         for (; ; )
         {
@@ -33,10 +36,11 @@ internal class Game
         }
 
         Console.WriteLine();
-        Console.WriteLine("d` deal    win    your    your                       casino");
-        Console.WriteLine("d`count   rate   stack    hand     board             hand     result");
+        Console.WriteLine("d` deal    win   your    your                       casino");
+        Console.WriteLine("d`count   rate  stack    hand     board             hand     result");
         Console.WriteLine();
         var dealCount = 0;
+        float winRate;
         var stack = 100;
 
         while (stack >= 3)
@@ -50,21 +54,21 @@ internal class Game
             casino[0] = deck.Pop();
             player[1] = deck.Pop();
             casino[1] = deck.Pop();
+            deck.Pop();
             board[0] = deck.Pop();
             board[1] = deck.Pop();
             board[2] = deck.Pop();
 
-            var stackPad = "".PadLeft(Math.Max(0, 5 - stack.ToString().Length));
             var pos = Console.CursorPosition;
-
-            var rate = (dealCount > 0 ? (float)(stack - 100) / 6 / dealCount : 0) + 0.5;
+            winRate = dealCount > 0 ? Math.Min(0.999f, (float)(stack - 100) / 6 / dealCount + 0.5f) : 0.5f;
+            var stackPad = "".PadLeft(Math.Max(0, 5 - stack.ToString().Length));
             dealCount++;
 
             if (dealCount > 1)
                 Console.WriteLine();
 
             Console.WriteLine(
-                $"d` {dealCount,4}   {rate:0.000} ",
+                $"d`{dealCount,5}   {winRate:.000} ",
                 $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}    ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "    ",
                 "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " ",
@@ -91,12 +95,14 @@ internal class Game
                     goto NewGame;
             }
 
+            deck.Pop();
             board[3] = deck.Pop();
+            deck.Pop();
             board[4] = deck.Pop();
             var winCtx = Utils.GetWinCtx(player, casino, board);
 
             pos = pos.Write(
-                $"d` {dealCount,4}   {rate:0.000} ",
+                $"d`{dealCount,5}   {winRate:.000} ",
                 $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}    ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "    ",
                 "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " ");
@@ -128,15 +134,14 @@ internal class Game
                 {
                     pos = pos.Write(
                         $"d`{board[3]} {board[4]}    " +
-                        $"{casino[0]} {casino[1]}    ",
-                        "d`fold ");
+                        $"{casino[0]} {casino[1]}    ");
 
                     if (winCtx.Winner == Winner.Player)
-                        pos.Write($"r`(would win by {WinReason(winCtx)})");
+                        pos.Write("r`fold", $"d` (would win by {WinReason(winCtx)})");
                     else if (winCtx.Winner == Winner.Casino)
-                        pos.Write($"g`(would lose by {WinReason(winCtx)})");
+                        pos.Write("g`fold", $"d` (would lose by {WinReason(winCtx)})");
                     else
-                        pos.Write($"y`(would split {WinReason(winCtx)})");
+                        pos.Write("y`fold", $"d` (would split {WinReason(winCtx)})");
                 }
                 else
                     pos.Write("d`·· ··    ·· ··    fold");
@@ -147,9 +152,11 @@ internal class Game
             Console.CursorPosition = new(0, Console.CursorTop - (dealCount == 1 ? 1 : 2));
         }
 
-        Console.WriteLine($"r`                  $", $"R`{stack}");
+        winRate = (float)(stack - 100) / 6 / dealCount + 0.5f;
+        Console.WriteLine($"d`        {winRate:.000}     " , $"r`$", $"R`{stack}");
+        Console.WriteLine();
         Console.WriteLine("WR` Game over ");
-        Console.WriteLine("R`You’ve lost all your money!");
+        Console.WriteLine("R`You’ve lost all your money.");
         Console.WriteLine();
         Console.Write("Repeat? [y/n]: ");
 
@@ -231,7 +238,7 @@ internal class Game
             WinKind.ThreeOfKind => "three-of-kind",
             WinKind.TwoPair => "two-pair",
             WinKind.Pair => "pair",
-            WinKind.HighCaed => "high-card",
+            WinKind.HighCard => "high-card",
             _ => throw new InvalidOperationException()
         };
     }
