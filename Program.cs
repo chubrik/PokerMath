@@ -10,7 +10,7 @@ switch (args[0])
         return;
 
     case "bruteforce":
-        Btuteforce.Start();
+        Bruteforce.Start();
         return;
 
     case "game":

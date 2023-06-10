@@ -3,9 +3,9 @@
 using System.Diagnostics;
 using static PokerMath.Constants;
 
-internal static class Btuteforce
+internal static class Bruteforce
 {
-    private const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
+    public const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 
     public static void Start()
     {
@@ -24,7 +24,6 @@ internal static class Btuteforce
             var board = new Card[5];
             var casino = new Card[2];
             var prevTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            var count = 0L;
 
             // Флоп
             for (var i0 = 0; i0 < AllCardsCount - 2; i0++)
@@ -85,8 +84,6 @@ internal static class Btuteforce
                                         if (winner == Winner.Player) winCount++;
                                         else if (winner == Winner.Casino) loseCount++;
                                         else splitCount++;
-
-                                        count++;
                                     }
                                 }
 
