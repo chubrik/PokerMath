@@ -5,8 +5,6 @@ using static PokerMath.Constants;
 
 internal static class Bruteforce
 {
-    public const int FlopGameCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
-
     public static void Start()
     {
         for (var handIndex = 0; handIndex < AllHands.Count; handIndex++)
@@ -95,7 +93,7 @@ internal static class Bruteforce
 
                         usageMap[card2.Index] = false;
 
-                        Debug.Assert(winCount + loseCount + splitCount == FlopGameCount);
+                        Debug.Assert(winCount + loseCount + splitCount == FlopDialCount);
 
                         var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                         var elapsed = time - prevTime;
@@ -104,8 +102,8 @@ internal static class Bruteforce
                         Console.WriteLine(
                             $"{player[0]} {player[1]} - " +
                             $"{board[0]} {board[1]} {board[2]} ... - " +
-                            $"wins: {winCount / (float)(FlopGameCount - splitCount):0.00000}, ",
-                            $"d`ties: {splitCount / (float)FlopGameCount:0.00000}, " +
+                            $"wins: {winCount / (float)(FlopDialCount - splitCount):0.00000}, ",
+                            $"d`ties: {splitCount / (float)FlopDialCount:0.00000}, " +
                             $"time: {elapsed} ms");
 
                         File.AppendAllText(

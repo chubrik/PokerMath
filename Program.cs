@@ -17,6 +17,10 @@ switch (args[0])
         Game.Start();
         return;
 
+    case "statistics":
+        Statistics.Start();
+        return;
+
     default:
         throw new ArgumentOutOfRangeException(nameof(args));
 }

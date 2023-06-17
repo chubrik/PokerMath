@@ -11,6 +11,10 @@
     "Game": {
       "commandName": "Project",
       "commandLineArgs": "game"
+    },
+    "Statistics": {
+      "commandName": "Project",
+      "commandLineArgs": "statistics"
     }
   }
 }

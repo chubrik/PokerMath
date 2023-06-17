@@ -3,6 +3,8 @@
 internal class Constants
 {
     public const int AllCardsCount = 52;
+    public const int FlopCount = 19600; // 50 * 49 * 48 / 6;
+    public const int FlopDialCount = 1070190; // (47 * 46 / 2) * (45 * 44 / 2)
 
     public static readonly IReadOnlyList<Card> AllCards = new List<Card>
     {

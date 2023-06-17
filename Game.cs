@@ -7,7 +7,6 @@ using static PokerMath.Constants;
 internal class Game
 {
     private const float MaxChanceToFold = 1f / 3;
-    private const int FlopCount = 19600; // 50 * 49 * 48 / 6;
     private static bool _isChancesInitialized = false;
     private static readonly float[] _allChances = new float[3312400]; // 169 * 19600
     private static readonly int[] _chancesBoard0Shifts = new int[48];
@@ -339,7 +338,7 @@ internal class Game
                 var commaIndex = line.IndexOf(',');
                 var winCount = int.Parse(line[..commaIndex]);
                 var splitCount = int.Parse(line[(commaIndex + 1)..]);
-                var loseCount = Bruteforce.FlopGameCount - winCount - splitCount;
+                var loseCount = FlopDialCount - winCount - splitCount;
                 var chance = (float)winCount / (winCount + loseCount);
                 _allChances[allChancesIndex++] = chance;
             }
@@ -423,8 +422,8 @@ internal class Game
             usageMap[card3.Index] = false;
         }
 
-        Debug.Assert(winCount + loseCount + splitCount == Bruteforce.FlopGameCount);
-        var chance = (float)winCount / (Bruteforce.FlopGameCount - splitCount);
+        Debug.Assert(winCount + loseCount + splitCount == FlopDialCount);
+        var chance = (float)winCount / (FlopDialCount - splitCount);
         return chance;
     }
 
