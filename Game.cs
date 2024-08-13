@@ -17,33 +17,33 @@ internal class Game
         Console.Clear();
         Console.WriteLine("W`Welcome to Speed Poker game!");
         Console.WriteLine();
-        Console.WriteLine("C`1.", " Real game");
-        Console.WriteLine("C`2.", " Gambling - show after fold");
+        Console.WriteLine(["C`1.", " Real game"]);
+        Console.WriteLine(["C`2.", " Gambling - show after fold"]);
         Console.WriteLine("d`3. Training - analyse your moves");
-        Console.WriteLine("C`4.", " Cheating - hint of chances");
+        Console.WriteLine(["C`4.", " Cheating - hint of chances"]);
         Console.WriteLine();
-        Console.Write("Select ", "C`[1]", ", ", "C`[2]", ", ", "d`[3]", " or ", "C`[4]", " mode: ");
+        Console.Write(["Select ", "C`[1]", ", ", "C`[2]", ", ", "d`[3]", " or ", "C`[4]", " mode: "]);
         var showFolded = false;
         var hintChances = false;
 
         for (; ; )
         {
-            var key = Console.ReadKey(intercept: true).Key;
+            var key = Console.ReadKey(intercept: true).KeyChar;
 
-            if (key == ConsoleKey.D1)
+            if (key == '1')
             {
                 Console.WriteLine("W`1");
                 break;
             }
 
-            if (key == ConsoleKey.D2)
+            if (key == '2')
             {
                 Console.WriteLine("W`2");
                 showFolded = true;
                 break;
             }
 
-            if (key == ConsoleKey.D4)
+            if (key == '4')
             {
                 Console.WriteLine("W`4");
                 showFolded = true;
@@ -88,12 +88,12 @@ internal class Game
             if (dealCount > 1)
                 Console.WriteLine();
 
-            Console.WriteLine(
+            Console.WriteLine([
                 $"d`{dealCount,5}  {raiseRate:.000}  {winRate:.000} ",
                 $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}   ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "   ",
                 "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " ",
-                "d`·· ··   ·· ··");
+                "d`·· ··   ·· ··"]);
 
             Console.WriteLine();
 
@@ -105,14 +105,14 @@ internal class Game
                 var chance = GetChance(player, board);
                 autoRaise = chance > MaxChanceToFold;
 
-                Console.Write(
+                Console.Write([
                     "Select ",
                     $"{(autoRaise ? "Wg" : "C")}`[R]", "aise, ",
                     $"{(!autoRaise ? "Wr" : "C")}`[F]", "old or ",
-                    "C`[A]", $"uto (", $"{(autoRaise ? 'g' : 'r')}`{chance:.000}", " chance): ");
+                    "C`[A]", $"uto (", $"{(autoRaise ? 'g' : 'r')}`{chance:.000}", " chance): "]);
             }
             else
-                Console.Write("Select ", "C`[R]", "aise or ", "C`[F]", "old: ");
+                Console.Write(["Select ", "C`[R]", "aise or ", "C`[F]", "old: "]);
 
             for (; ; )
             {
@@ -146,17 +146,17 @@ internal class Game
             board[4] = deck.Pop();
             var winCtx = Utils.GetWinCtx(player, casino, board);
 
-            pos = pos.Write(
+            pos = pos.Write([
                 $"d`{dealCount,5}  {raiseRate:.000}  {winRate:.000} ",
                 $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}   ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "   ",
-                "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " ");
+                "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " "]);
 
             if (raise)
             {
-                pos = pos.Write(
+                pos = pos.Write([
                     Val(board[3]), Sut(board[3]), " ", Val(board[4]), Sut(board[4]), "   ",
-                    Val(casino[0]), Sut(casino[0]), " ", Val(casino[1]), Sut(casino[1]), "   ");
+                    Val(casino[0]), Sut(casino[0]), " ", Val(casino[1]), Sut(casino[1]), "   "]);
 
                 if (winCtx.Winner == Winner.Player)
                 {
@@ -182,11 +182,11 @@ internal class Game
                         $"{casino[0]} {casino[1]}   ");
 
                     if (winCtx.Winner == Winner.Player)
-                        pos.Write("r`fold", $"d` (would win by {WinReason(winCtx)})");
+                        pos.Write(["r`fold", $"d` (would win by {WinReason(winCtx)})"]);
                     else if (winCtx.Winner == Winner.Casino)
-                        pos.Write("g`fold", $"d` (would lose by {WinReason(winCtx)})");
+                        pos.Write(["g`fold", $"d` (would lose by {WinReason(winCtx)})"]);
                     else
-                        pos.Write("r`fold", $"d` (would split {WinReason(winCtx)})");
+                        pos.Write(["r`fold", $"d` (would split {WinReason(winCtx)})"]);
                 }
                 else
                     pos.Write("d`·· ··   ·· ··   fold");
@@ -199,7 +199,7 @@ internal class Game
 
         raiseRate = Math.Min(0.999f, (float)raiseCount / dealCount);
         winRate = (float)(stack - 100) / 6 / dealCount + 0.5f;
-        Console.WriteLine($"d`       {raiseRate:.000}  {winRate:.000}     ", $"r`$", $"R`{stack}");
+        Console.WriteLine([$"d`       {raiseRate:.000}  {winRate:.000}     ", $"r`$", $"R`{stack}"]);
         Console.WriteLine();
         Console.WriteLine("WR` Game over ");
         Console.WriteLine("R`You’ve lost all your money.");

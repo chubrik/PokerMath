@@ -99,12 +99,12 @@ internal static class Bruteforce
                         var elapsed = time - prevTime;
                         prevTime = time;
 
-                        Console.WriteLine(
+                        Console.WriteLine([
                             $"{player[0]} {player[1]} - " +
                             $"{board[0]} {board[1]} {board[2]} ... - " +
                             $"wins: {winCount / (float)(FlopDialCount - splitCount):0.00000}, ",
                             $"d`ties: {splitCount / (float)FlopDialCount:0.00000}, " +
-                            $"time: {elapsed} ms");
+                            $"time: {elapsed} ms"]);
 
                         File.AppendAllText(
                             $"{handIndex.ToString().PadLeft(3, '0')}.txt",
