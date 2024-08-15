@@ -6,6 +6,8 @@ using static PokerMath.Constants;
 
 internal class Game
 {
+    private const int InitStack = 100;
+    private const int LowStack = InitStack / 5;
     private const float MaxChanceToFold = 1f / 3;
     private static bool _isChancesInitialized = false;
     private static readonly float[] _allChances = new float[3312400]; // 169 * 19600
@@ -54,26 +56,26 @@ internal class Game
         }
 
         Console.WriteLine();
-        Console.WriteLine("d` deal raise   win   your   your                     casino");
+        Console.WriteLine("d` deal raise   win   your   your                     dealer");
         Console.WriteLine("d`count  rate  rate  stack   hand    board            hand    result");
         Console.WriteLine();
         var dealCount = 0;
         var raiseCount = 0;
         float raiseRate;
         float winRate;
-        var stack = 100;
+        var stack = InitStack;
 
         while (stack >= 3)
         {
             var deck = new Deck();
             var player = new Card[2];
-            var casino = new Card[2];
+            var dealer = new Card[2];
             var board = new Card[5];
 
             player[0] = deck.Pop();
-            casino[0] = deck.Pop();
+            dealer[0] = deck.Pop();
             player[1] = deck.Pop();
-            casino[1] = deck.Pop();
+            dealer[1] = deck.Pop();
             deck.Pop();
             board[0] = deck.Pop();
             board[1] = deck.Pop();
@@ -81,7 +83,7 @@ internal class Game
 
             var pos = Console.CursorPosition;
             raiseRate = dealCount > 0 ? Math.Min(0.999f, (float)raiseCount / dealCount) : 0.5f;
-            winRate = dealCount > 0 ? Math.Min(0.999f, (float)(stack - 100) / 6 / dealCount + 0.5f) : 0.5f;
+            winRate = dealCount > 0 ? Math.Min(0.999f, (float)(stack - InitStack) / 6 / dealCount + 0.5f) : 0.5f;
             var stackPad = "".PadLeft(Math.Max(0, 5 - stack.ToString().Length));
             dealCount++;
 
@@ -90,7 +92,7 @@ internal class Game
 
             Console.WriteLine([
                 $"d`{dealCount,5}  {raiseRate:.000}  {winRate:.000} ",
-                $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}   ",
+                $"{(stack < LowStack ? 'r' : 'd')}`{stackPad}$", $"{(stack < LowStack ? 'R' : 'W')}`{stack}   ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "   ",
                 "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " ",
                 "d`·· ··   ·· ··"]);
@@ -144,11 +146,11 @@ internal class Game
             board[3] = deck.Pop();
             deck.Pop();
             board[4] = deck.Pop();
-            var winCtx = Utils.GetWinCtx(player, casino, board);
+            var winCtx = Utils.GetWinCtx(player, dealer, board);
 
             pos = pos.Write([
                 $"d`{dealCount,5}  {raiseRate:.000}  {winRate:.000} ",
-                $"{(stack < 20 ? 'r' : 'd')}`{stackPad}$", $"{(stack < 20 ? 'R' : 'W')}`{stack}   ",
+                $"{(stack < LowStack ? 'r' : 'd')}`{stackPad}$", $"{(stack < LowStack ? 'R' : 'W')}`{stack}   ",
                 "d`", Val(player[0]), Sut(player[0]), " ", Val(player[1]), Sut(player[1]), "   ",
                 "d`", Val(board[0]), Sut(board[0]), " ", Val(board[1]), Sut(board[1]), " ", Val(board[2]), Sut(board[2]), " "]);
 
@@ -156,14 +158,14 @@ internal class Game
             {
                 pos = pos.Write([
                     Val(board[3]), Sut(board[3]), " ", Val(board[4]), Sut(board[4]), "   ",
-                    Val(casino[0]), Sut(casino[0]), " ", Val(casino[1]), Sut(casino[1]), "   "]);
+                    Val(dealer[0]), Sut(dealer[0]), " ", Val(dealer[1]), Sut(dealer[1]), "   "]);
 
                 if (winCtx.Winner == Winner.Player)
                 {
                     stack += 3;
                     pos.Write($"G`win by {WinReason(winCtx)}");
                 }
-                else if (winCtx.Winner == Winner.Casino)
+                else if (winCtx.Winner == Winner.Dealer)
                 {
                     stack -= 3;
                     pos.Write($"R`lose by {WinReason(winCtx)}");
@@ -179,11 +181,11 @@ internal class Game
                 {
                     pos = pos.Write(
                         $"d`{board[3]} {board[4]}   " +
-                        $"{casino[0]} {casino[1]}   ");
+                        $"{dealer[0]} {dealer[1]}   ");
 
                     if (winCtx.Winner == Winner.Player)
                         pos.Write(["r`fold", $"d` (would win by {WinReason(winCtx)})"]);
-                    else if (winCtx.Winner == Winner.Casino)
+                    else if (winCtx.Winner == Winner.Dealer)
                         pos.Write(["g`fold", $"d` (would lose by {WinReason(winCtx)})"]);
                     else
                         pos.Write(["r`fold", $"d` (would split {WinReason(winCtx)})"]);
@@ -198,7 +200,7 @@ internal class Game
         }
 
         raiseRate = Math.Min(0.999f, (float)raiseCount / dealCount);
-        winRate = (float)(stack - 100) / 6 / dealCount + 0.5f;
+        winRate = (float)(stack - InitStack) / 6 / dealCount + 0.5f;
         Console.WriteLine([$"d`       {raiseRate:.000}  {winRate:.000}     ", $"r`$", $"R`{stack}"]);
         Console.WriteLine();
         Console.WriteLine("WR` Game over ");
@@ -372,7 +374,7 @@ internal class Game
         foreach (var card in board.Take(3))
             usageMap[allCards.Select(x => x.Index).Single(x => x == card.Index)] = true;
 
-        var casino = new Card[2];
+        var dealer = new Card[2];
         var count = 0L;
         var winCount = 0;
         var loseCount = 0;
@@ -398,18 +400,18 @@ internal class Game
                 {
                     var card5 = allCards[i5];
                     if (usageMap[card5.Index]) continue;
-                    casino[0] = card5;
+                    dealer[0] = card5;
 
                     for (var i6 = i5 + 1; i6 < AllCardsCount; i6++)
                     {
                         var card6 = allCards[i6];
                         if (usageMap[card6.Index]) continue;
-                        casino[1] = card6;
+                        dealer[1] = card6;
 
                         // Игра
-                        var winner = Utils.GetWinCtx(player, casino, board).Winner;
+                        var winner = Utils.GetWinCtx(player, dealer, board).Winner;
                         if (winner == Winner.Player) winCount++;
-                        else if (winner == Winner.Casino) loseCount++;
+                        else if (winner == Winner.Dealer) loseCount++;
                         else splitCount++;
 
                         count++;
@@ -484,8 +486,8 @@ internal class Game
     private static string WinReason(WinCtx ctx)
     {
         var player = ctx.Player;
-        var casino = ctx.Casino;
-        var winnerOrSplitCtx = ctx.Winner == Winner.Player ? player : casino;
+        var dealer = ctx.Dealer;
+        var winnerOrSplitCtx = ctx.Winner == Winner.Player ? player : dealer;
 
         return winnerOrSplitCtx.Kind switch
         {

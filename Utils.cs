@@ -67,37 +67,37 @@ internal static class Utils
 
     #endregion
 
-    public static WinCtx GetWinCtx(IReadOnlyList<Card> player, IReadOnlyList<Card> casino, IReadOnlyList<Card> board)
+    public static WinCtx GetWinCtx(IReadOnlyList<Card> player, IReadOnlyList<Card> dealer, IReadOnlyList<Card> board)
     {
         Debug.Assert(player.Count == 2);
-        Debug.Assert(casino.Count == 2);
+        Debug.Assert(dealer.Count == 2);
         Debug.Assert(board.Count == 5);
 
         var playerCtx = GetCtx(player: player, board: board);
-        var casinoCtx = GetCtx(player: casino, board: board);
+        var dealerCtx = GetCtx(player: dealer, board: board);
 
-        if (playerCtx.Kind > casinoCtx.Kind)
-            return new WinCtx(Winner.Player, playerCtx, casinoCtx);
+        if (playerCtx.Kind > dealerCtx.Kind)
+            return new WinCtx(Winner.Player, playerCtx, dealerCtx);
 
-        if (playerCtx.Kind < casinoCtx.Kind)
-            return new WinCtx(Winner.Casino, playerCtx, casinoCtx);
+        if (playerCtx.Kind < dealerCtx.Kind)
+            return new WinCtx(Winner.Dealer, playerCtx, dealerCtx);
 
-        if (playerCtx.Value0 != casinoCtx.Value0)
-            return new WinCtx(playerCtx.Value0 > casinoCtx.Value0 ? Winner.Player : Winner.Casino, playerCtx, casinoCtx);
+        if (playerCtx.Value0 != dealerCtx.Value0)
+            return new WinCtx(playerCtx.Value0 > dealerCtx.Value0 ? Winner.Player : Winner.Dealer, playerCtx, dealerCtx);
 
-        if (playerCtx.Value1 != casinoCtx.Value1)
-            return new WinCtx(playerCtx.Value1 > casinoCtx.Value1 ? Winner.Player : Winner.Casino, playerCtx, casinoCtx);
+        if (playerCtx.Value1 != dealerCtx.Value1)
+            return new WinCtx(playerCtx.Value1 > dealerCtx.Value1 ? Winner.Player : Winner.Dealer, playerCtx, dealerCtx);
 
-        if (playerCtx.Value2 != casinoCtx.Value2)
-            return new WinCtx(playerCtx.Value2 > casinoCtx.Value2 ? Winner.Player : Winner.Casino, playerCtx, casinoCtx);
+        if (playerCtx.Value2 != dealerCtx.Value2)
+            return new WinCtx(playerCtx.Value2 > dealerCtx.Value2 ? Winner.Player : Winner.Dealer, playerCtx, dealerCtx);
 
-        if (playerCtx.Value3 != casinoCtx.Value3)
-            return new WinCtx(playerCtx.Value3 > casinoCtx.Value3 ? Winner.Player : Winner.Casino, playerCtx, casinoCtx);
+        if (playerCtx.Value3 != dealerCtx.Value3)
+            return new WinCtx(playerCtx.Value3 > dealerCtx.Value3 ? Winner.Player : Winner.Dealer, playerCtx, dealerCtx);
 
         return new WinCtx(
-            playerCtx.Value4 == casinoCtx.Value4 ? Winner.Split
-                : playerCtx.Value4 > casinoCtx.Value4 ? Winner.Player : Winner.Casino,
-            playerCtx, casinoCtx);
+            playerCtx.Value4 == dealerCtx.Value4 ? Winner.Split
+                : playerCtx.Value4 > dealerCtx.Value4 ? Winner.Player : Winner.Dealer,
+            playerCtx, dealerCtx);
     }
 
     private static PlayerCtx GetCtx(IReadOnlyList<Card> player, IReadOnlyList<Card> board)
@@ -422,30 +422,20 @@ internal static class Utils
     }
 }
 
-internal readonly struct PlayerCtx
+internal readonly struct PlayerCtx(
+    WinKind kind,
+    Value value0 = default,
+    Value value1 = default,
+    Value value2 = default,
+    Value value3 = default,
+    Value value4 = default)
 {
-    public WinKind Kind { get; }
-    public Value Value0 { get; }
-    public Value Value1 { get; }
-    public Value Value2 { get; }
-    public Value Value3 { get; }
-    public Value Value4 { get; }
-
-    public PlayerCtx(
-        WinKind kind,
-        Value value0 = default,
-        Value value1 = default,
-        Value value2 = default,
-        Value value3 = default,
-        Value value4 = default)
-    {
-        Kind = kind;
-        Value0 = value0;
-        Value1 = value1;
-        Value2 = value2;
-        Value3 = value3;
-        Value4 = value4;
-    }
+    public WinKind Kind { get; } = kind;
+    public Value Value0 { get; } = value0;
+    public Value Value1 { get; } = value1;
+    public Value Value2 { get; } = value2;
+    public Value Value3 { get; } = value3;
+    public Value Value4 { get; } = value4;
 }
 
 internal enum WinKind : byte
@@ -462,23 +452,16 @@ internal enum WinKind : byte
     RoyalFlush,
 }
 
-internal readonly struct WinCtx
+internal readonly struct WinCtx(Winner winner, PlayerCtx player, PlayerCtx dealer)
 {
-    public Winner Winner { get; }
-    public PlayerCtx Player { get; }
-    public PlayerCtx Casino { get; }
-
-    public WinCtx(Winner winner, PlayerCtx player, PlayerCtx casino)
-    {
-        Winner = winner;
-        Player = player;
-        Casino = casino;
-    }
+    public Winner Winner { get; } = winner;
+    public PlayerCtx Player { get; } = player;
+    public PlayerCtx Dealer { get; } = dealer;
 }
 
 internal enum Winner
 {
     Player = 1,
-    Casino,
+    Dealer,
     Split
 }

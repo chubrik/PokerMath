@@ -20,7 +20,7 @@ internal static class Bruteforce
                 usageMap[allCards.Select(x => x.Index).Single(x => x == card.Index)] = true;
 
             var board = new Card[5];
-            var casino = new Card[2];
+            var dealer = new Card[2];
             var prevTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
             // Флоп
@@ -69,18 +69,18 @@ internal static class Bruteforce
                                 {
                                     var card5 = allCards[i5];
                                     if (usageMap[card5.Index]) continue;
-                                    casino[0] = card5;
+                                    dealer[0] = card5;
 
                                     for (var i6 = i5 + 1; i6 < AllCardsCount; i6++)
                                     {
                                         var card6 = allCards[i6];
                                         if (usageMap[card6.Index]) continue;
-                                        casino[1] = card6;
+                                        dealer[1] = card6;
 
                                         // Игра
-                                        var winner = Utils.GetWinCtx(player, casino, board).Winner;
+                                        var winner = Utils.GetWinCtx(player, dealer, board).Winner;
                                         if (winner == Winner.Player) winCount++;
-                                        else if (winner == Winner.Casino) loseCount++;
+                                        else if (winner == Winner.Dealer) loseCount++;
                                         else splitCount++;
                                     }
                                 }

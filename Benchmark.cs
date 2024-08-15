@@ -23,9 +23,9 @@ internal static class Benchmark
             {
                 cards.Shuffle();
                 var player = new[] { cards[0], cards[1] };
-                var casino = new[] { cards[2], cards[3] };
+                var dealer = new[] { cards[2], cards[3] };
                 var board = new[] { cards[4], cards[5], cards[6], cards[7], cards[8] };
-                var ctx = new Ctx(player, casino, board);
+                var ctx = new Ctx(player, dealer, board);
                 ctxs.Add(ctx);
             }
 
@@ -34,7 +34,7 @@ internal static class Benchmark
             for (var i = 0; i < DialGroupCount; i++)
             {
                 var ctx = ctxs[i];
-                Utils.GetWinCtx(ctx.Player, ctx.Casino, ctx.Board);
+                Utils.GetWinCtx(ctx.Player, ctx.Dealer, ctx.Board);
             }
 
             var elapsedMs = sw.Elapsed;
@@ -57,17 +57,17 @@ internal static class Benchmark
     private sealed class Ctx
     {
         public IReadOnlyList<Card> Player { get; }
-        public IReadOnlyList<Card> Casino { get; }
+        public IReadOnlyList<Card> Dealer { get; }
         public IReadOnlyList<Card> Board { get; }
 
-        public Ctx(IReadOnlyList<Card> player, IReadOnlyList<Card> casino, IReadOnlyList<Card> board)
+        public Ctx(IReadOnlyList<Card> player, IReadOnlyList<Card> dealer, IReadOnlyList<Card> board)
         {
             Debug.Assert(player.Count == 2);
-            Debug.Assert(casino.Count == 2);
+            Debug.Assert(dealer.Count == 2);
             Debug.Assert(board.Count == 5);
 
             Player = player;
-            Casino = casino;
+            Dealer = dealer;
             Board = board;
         }
     }
