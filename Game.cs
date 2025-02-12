@@ -47,10 +47,12 @@ internal class Game
 
             if (key == '4')
             {
-                Console.WriteLine("W`4");
+                var (_, end) = Console.WriteLine("W`4");
                 showFolded = true;
                 hintChances = true;
+                var animation = end.AnimateEllipsis();
                 InitChances();
+                animation.Stop();
                 break;
             }
         }
@@ -206,21 +208,9 @@ internal class Game
         Console.WriteLine("WR` Game over ");
         Console.WriteLine("R`You’ve lost all your money.");
         Console.WriteLine();
-        Console.Write("Repeat? [y/n]: ");
 
-        for (; ; )
-        {
-            var key = Console.ReadKey(intercept: true).Key;
-
-            if (key == ConsoleKey.Y)
-                goto NewGame;
-
-            if (key == ConsoleKey.N)
-            {
-                Console.WriteLine("R`No");
-                break;
-            }
-        }
+        if (Console.Extras.Confirm("Repeat? [y/n]: "))
+            goto NewGame;
     }
 
     private static float GetChance(IReadOnlyList<Card> player, IReadOnlyList<Card> board)
